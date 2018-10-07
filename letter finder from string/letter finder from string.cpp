@@ -13,10 +13,14 @@
 #include <ctime>
 #include <fstream>
 float letterno[26], percentage[26];
-long totalletter = 0, totalchar = 0, totalnum = 0, totalnospace = 0;
+int param;
+unsigned long long totalletter = 0, totalchar = 0, totalnum = 0, totalnospace = 0;
 char display = 'A';
-char strings[250000000];
+char strings[8191];
+unsigned long long wordcount = 0;
+double elapsedp1;
 using namespace std;
+clock_t beginl , endr;
 void gotoxy(int x, int y)
 {
 	COORD c = { x, y };
@@ -33,17 +37,22 @@ void GetScreenResolution()
 void Prestart()
 {
 	// make every element 0
+
 	for (int k = 0; k < 26; k++)
 	{
 		letterno[k] = 0;
 		percentage[k] = 0;
 	}
 }
-void letterfinder(char strings[])
+void letterfinder(char strings[] , int param=1)
 {
-	clock_t begin = clock();
-	system("cls");
-	for (int i = 0; i < strlen(strings); i++)
+	if (param == 0)
+	{
+		wordcount++;
+		if (wordcount % 25000000 == 0)
+			cout << "Word no " << wordcount << " reached!" << '\n';
+	}
+	for (long i = 0; i < strlen(strings); i++)
 	{
 		// check whether we've got a letter among the strings
 		if ((isupper(strings[i]) || islower(strings[i])) == 1)
@@ -66,8 +75,10 @@ void letterfinder(char strings[])
 			totalnospace++; // not a space
 		totalchar++; // in any case
 	}
-	clock_t end = clock();
-	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+}
+void results()
+{
+	double elapsed_secs = double(endr - beginl) / CLOCKS_PER_SEC;
 	// display the output
 	cout << "The number of times each letter appears and the percentage of occurrence is:-" << '\n';
 	cout << "Letter" << '\t' << "No of times" << '\t' << "Percentage" << '\n' << '\n';
@@ -81,44 +92,53 @@ void letterfinder(char strings[])
 	cout << "The total number of numbers counted is " << totalnum << '\n';
 	cout << "The total number of characters excluding spaces is " << totalnospace << '\n';
 	cout << "The total number of characters including spaces is " << totalchar << '\n';
-	cout << "Time taken for operation is " << elapsed_secs << " seconds" << '\n';
-	cout << "Number of characters searched per second is " << floor(totalchar / elapsed_secs);
+	if (param == 0)
+		cout << "The total number of words counted is " << wordcount << '\n';
+	cout << "Time taken for Part 2 operation is " << elapsed_secs << " seconds" << '\n';
+	cout << "Number of characters searched per second is " << floor(totalchar / elapsed_secs) << '\n';
 }
 int main()
 {
-	char filename[60];
+	char filename[5550];
 	Prestart();
 	gotoxy(25, 15);
 	cout << "Enter 0 to copy string , enter 1 to open txt file in current directory" << '\n';
 	int opt1;
-	cin >> opt1;
+	base:cin >> opt1;
 	if (opt1 == 1)
 	{
 		cout << "Enter the filepath of file , appending file extension to it" << '\n';
-		cin >> filename;
+		cin.ignore();
+		gets_s(filename);
 		ifstream File;
 		system("cls");
 		cout << "Loading... " << '\n';
 		File.open(filename);
 		cout << "Accessing file ..." << '\n';
-		char string2[60];
-		char space;
+		beginl = clock();
 		while (!File.eof())
 		{
-			int charcheck = File.gcount();
-			File >> string2;
-			string2[charcheck] = 32;
-			strcat_s(strings, string2);
+			File.getline(strings, 8191, ' ');
+			letterfinder(strings , 0);
 		}
+		endr = clock();
+		results();
 	}
-	else
+	else if (opt1==0)
 	{
 		cout << "Enter the strings" << '\n';
+		cin.ignore();
 		gets_s(strings);
 		cout << "Press a key to continue" << '\n';
 		_getch();
 		system("cls");
+		letterfinder(strings);
+		results();
 	}
-	letterfinder(strings);
+	else
+	{
+		cout << "Invalid number. Select 1 or 0" << '\n';
+		goto base;
+	}
 	_getch();
 }
