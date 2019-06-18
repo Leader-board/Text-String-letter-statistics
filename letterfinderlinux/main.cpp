@@ -1,16 +1,14 @@
 // letter finder from strings.cpp : Defines the entry point for the console application.
-//
-#include "stdafx.h"
 #include <iostream>
-#include <string>
+#include <string.h>
 #include <ctype.h>
-#include <stdio.h>
-#include <conio.h>
+#include <cstdio>
 #include <iomanip>
-#include <Windows.h>
-#include <WinUser.h>
 #include <ctime>
 #include <fstream>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 unsigned long long letterno[26];
 float percentage[26];
 int param;
@@ -21,19 +19,6 @@ unsigned long long wordcount = 0;
 double elapsedp1;
 using namespace std;
 clock_t beginl, endr;
-void gotoxy(int x, int y)
-{
-	COORD c = { x, y };
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
-}
-void GetScreenResolution()
-{
-	RECT DesktopRect;
-	// Gets the Desktop window
-	HWND hDesktop = ::GetDesktopWindow();
-	// Gets the Desktop window rect or screen resolution in pixels
-	::GetWindowRect(hDesktop, &DesktopRect);
-}
 void Prestart()
 {
 	// make every element 0
@@ -44,7 +29,7 @@ void Prestart()
 		percentage[k] = 0;
 	}
 }
-void letterfinder(char strings[] , int param=1)
+void letterfinder(char strings[], int param = 1)
 {
 	if (param == 0)
 	{
@@ -52,15 +37,15 @@ void letterfinder(char strings[] , int param=1)
 		if (wordcount % 25000000 == 0)
 			cout << "Word no " << wordcount << " reached!" << '\n';
 	}
-	for (long i = 0; i < strlen(strings); i++)
+	for (unsigned long long i = 0; i < strlen(strings); i++)
 	{
 		// check whether we've got a letter among the strings
 		if ((isupper(strings[i]) || islower(strings[i])) == 1)
 		{
 			strings[i] = toupper(strings[i]);// for us not to worry about case
 			//  increment value corresponding to the letter
-			 letterno[strings[i] - 65]++;
-			 totalletter++;
+			letterno[strings[i] - 65]++;
+			totalletter++;
 		}
 		// did we get a number?
 		else if (((strings[i]) >= '0' && (strings[i]) <= '9') == 1)
@@ -94,11 +79,11 @@ void results()
 int main(int argc, char* argv[])
 {
 	char filename[5550];
-	Prestart();
 	int opt1 = -1;
+	Prestart();
 	if (argc == 2)
 	{
-		strcpy_s(filename, argv[1]);
+		strcpy(filename, argv[1]);
 		try {
 			ifstream File;
 			system("cls");
@@ -136,7 +121,7 @@ int main(int argc, char* argv[])
 		try {
 			cout << "Enter the filepath of file, appending file extension to it" << '\n';
 			cin.ignore();
-			gets_s(filename);
+			scanf("%s", filename);
 			ifstream File;
 			system("cls");
 			cout << "Loading... " << '\n';
@@ -145,30 +130,30 @@ int main(int argc, char* argv[])
 			beginl = clock();
 			if (File.fail())
 			{
-				throw "File does not exist" ;
+				throw "File does not exist";
 			}
-		while (!File.eof())
-		{
-			File.getline(strings, 8191, ' ');
-			letterfinder(strings, 0);
-		}
+			while (!File.eof())
+			{
+				File.getline(strings, 8191, ' ');
+				letterfinder(strings, 0);
+			}
 		}
 		catch (char* message)
 		{
-			cout << message;
+			cerr << message;
 			getchar();
 			exit(1);
 		}
 		endr = clock();
 		results();
 	}
-	else if (opt1==0)
+	else if (opt1 == 0)
 	{
 		cout << "Enter the strings" << '\n';
 		cin.ignore();
-		gets_s(strings);
+		scanf("%s", strings);
 		cout << "Press a key to continue" << '\n';
-		_getch();
+		getchar();
 		system("cls");
 		letterfinder(strings);
 		results();
@@ -182,5 +167,5 @@ int main(int argc, char* argv[])
 		cout << "Invalid number. Select 1 or 0" << '\n';
 		goto base;
 	}
-	_getch();
+	getchar();
 }
