@@ -14,11 +14,13 @@ float percentage[26];
 int param;
 unsigned long long totalletter = 0, totalchar = 0, totalnum = 0, totalnospace = 0;
 char display = 'A';
-char strings[8191];
+char* strings;
 unsigned long long wordcount = 0;
 double elapsedp1;
 using namespace std;
 clock_t beginl, endr;
+int count = 0;
+size_t sizer = 5000;
 void Prestart()
 {
 	// make every element 0
@@ -29,28 +31,28 @@ void Prestart()
 		percentage[k] = 0;
 	}
 }
-void letterfinder(char strings[], int param = 1)
+void letterfinder(char* str, int param = 1)
 {
-	if (param == 0)
+	if (param == 0 && !(strlen(str) == 1 && str[0] == ' ')) // was put to guard against " " cases. Doubt this will be a problem anymore though.
 	{
 		wordcount++;
 		if (wordcount % 25000000 == 0)
 			cout << "Word no " << wordcount << " reached!" << '\n';
 	}
-	for (unsigned long long i = 0; i < strlen(strings); i++)
+	for (unsigned long long i = 0; i < strlen(str); i++)
 	{
 		// check whether we've got a letter among the strings
-		if ((isupper(strings[i]) || islower(strings[i])) == 1)
+		if ((isupper(str[i]) || islower(str[i])) == 1)
 		{
-			strings[i] = toupper(strings[i]);// for us not to worry about case
+			str[i] = toupper(str[i]);// for us not to worry about case
 			//  increment value corresponding to the letter
-			letterno[strings[i] - 65]++;
+			letterno[str[i] - 65]++;
 			totalletter++;
 		}
 		// did we get a number?
-		else if (((strings[i]) >= '0' && (strings[i]) <= '9') == 1)
+		else if (((str[i]) >= '0' && (str[i]) <= '9') == 1)
 			totalnum++;
-		if ((strings[i] != ' ') == 1)
+		if ((str[i] != ' ') == 1)
 			totalnospace++; // not a space
 		totalchar++; // in any case
 	}
@@ -70,7 +72,7 @@ void results()
 	cout << "The total number of letters counted is " << totalletter << '\n';
 	cout << "The total number of numbers counted is " << totalnum << '\n';
 	cout << "The total number of characters excluding spaces is " << totalnospace << '\n';
-	cout << "The total number of characters including spaces is " << totalchar << '\n';
+	cout << "The total number of characters including spaces is " << totalchar << '\n'; // will be same due to bug
 	if (param == 0)
 		cout << "The total number of words counted is " << wordcount << '\n';
 	cout << "Time taken for Part 2 operation is " << elapsed_secs << " seconds" << '\n';
@@ -84,21 +86,35 @@ int main(int argc, char* argv[])
 	if (argc == 2)
 	{
 		strcpy(filename, argv[1]);
+		FILE* F;
 		try {
-			ifstream File;
+			F = fopen(filename, "r");
 			system("cls");
 			cout << "Loading... " << '\n';
-			File.open(filename);
-			cout << "Accessing file ..." << '\n';
-			beginl = clock();
-			if (File.fail())
+			if (F)
 			{
-				throw "File does not exist";
+				cout << "Accessing file ..." << '\n';
+				beginl = clock();
+				/*
+				Here, we first take each line, and then pass each word to the letter finding function.
+				Not the best method, as strtok does not handle two instances of the same delimiter, causing extra spaces to be discarded.
+				But while simply using getdelim with delimiter ' ' should be enough, if that file has no spaces, then funny things (like buffer overflow) can happen.
+				Theortically it might still work, but this method is significantly faster.
+				*/
+				while (getdelim(&strings, &sizer, '\n', F) != -1)
+				{
+					char* str = strtok(strings, " ");
+					while (str != NULL)
+					{
+						letterfinder(str, 0);
+						//	printf("%s\n", str);
+						str = strtok(NULL, " ");
+					}
+				}
 			}
-			while (!File.eof())
+			else
 			{
-				File.getline(strings, 8191, ' ');
-				letterfinder(strings, 0);
+				throw "File opening error";
 			}
 		}
 		catch (char* message)
@@ -108,6 +124,7 @@ int main(int argc, char* argv[])
 			exit(1);
 		}
 		endr = clock();
+		fclose(F);
 		results();
 	}
 
@@ -118,24 +135,27 @@ int main(int argc, char* argv[])
 	}
 	if (opt1 == 1)
 	{
+		FILE* F;
 		try {
 			cout << "Enter the filepath of file, appending file extension to it" << '\n';
 			cin.ignore();
 			scanf("%s", filename);
-			ifstream File;
+			F = fopen(filename, "r");
 			system("cls");
 			cout << "Loading... " << '\n';
-			File.open(filename);
-			cout << "Accessing file ..." << '\n';
-			beginl = clock();
-			if (File.fail())
+			if (F)
 			{
-				throw "File does not exist";
+				cout << "Accessing file ..." << '\n';
+				beginl = clock();
+				while (getdelim(&strings, &sizer, ' ', F) != -1)
+				{
+					letterfinder(strings, 0);
+				}
+				free(strings);
 			}
-			while (!File.eof())
+			else
 			{
-				File.getline(strings, 8191, ' ');
-				letterfinder(strings, 0);
+				throw "File opening error";
 			}
 		}
 		catch (char* message)
@@ -145,10 +165,12 @@ int main(int argc, char* argv[])
 			exit(1);
 		}
 		endr = clock();
+		fclose(F);
 		results();
 	}
 	else if (opt1 == 0)
 	{
+
 		cout << "Enter the strings" << '\n';
 		cin.ignore();
 		scanf("%s", strings);

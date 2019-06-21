@@ -27,12 +27,18 @@
     <ClInclude Include="letter finder from string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="getline.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="letter finder from string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
